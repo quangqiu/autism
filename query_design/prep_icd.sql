@@ -1,4 +1,4 @@
-
+drop table  #IcdAutism
 SELECT
 GrouperSubquery3.* INTO #IcdAutism
 FROM

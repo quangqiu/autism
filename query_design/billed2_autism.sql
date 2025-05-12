@@ -10,7 +10,7 @@ DECLARE @age_plus1  AS integer = 9
 DECLARE @age_name   AS nvarchar(MAX) =  '8'
 DECLARE @birth_base_date  AS nvarchar(MAX) =  '2025-04-17'
 
-DECLARE @INTERIM_YEARS  AS integer = 3
+DECLARE @INTERIM_YEARS  AS integer = 1
 
 drop table #result_autism
 drop table #result_patients
@@ -89,7 +89,22 @@ FROM
               (  (  ( RootTable0.IsValid = 1 ) 
                     AND  ( RootTable0.UseInCosmosAnalytics_X = 1 )  ) 
                 AND  ( RootTable0.IsCurrent = 1 ) 
-                AND  (  ( FilterTable1.Count = '1' )  ) 
+                AND  (  ( FilterTable1.Count = '1' )  )
+
+------
+	      AND EXISTS  ( 
+                    SELECT
+                     1
+                    FROM
+                     EncounterFact AS FilterTable1
+                    WHERE
+                      (   ( FilterTable1.PrimaryCoverageFinancialClass_X = 'Medicaid'  ) 
+                        AND  (  (  ( FilterTable1.DateKey < @end_date ) 
+                                AND NOT  ( FilterTable1.DateKey < 0 )  ) 
+                            AND  (  ( FilterTable1.EndDateKey >= @start_date )  OR  ( FilterTable1.EndDateKey < 0 )  )  ) 
+                        AND  (  (  RootTable0.DurableKey = FilterTable1.PatientDurableKey  )  )  )  )
+-----
+		
                 AND EXISTS  ( 
                     SELECT
                      1
@@ -154,7 +169,21 @@ FROM
             WHERE
               (  (  ( RootTable0.IsValid = 1 ) 
                     AND  ( RootTable0.UseInCosmosAnalytics_X = 1 )  ) 
-                AND  ( RootTable0.IsCurrent = 1 ) 
+                AND  ( RootTable0.IsCurrent = 1 )
+		------
+	      AND EXISTS  ( 
+                    SELECT
+                     1
+                    FROM
+                     EncounterFact AS FilterTable1
+                    WHERE
+                      (   ( FilterTable1.PrimaryCoverageFinancialClass_X = 'Medicaid'  ) 
+                        AND  (  (  ( FilterTable1.DateKey < @end_date ) 
+                                AND NOT  ( FilterTable1.DateKey < 0 )  ) 
+                            AND  (  ( FilterTable1.EndDateKey >= @start_date )  OR  ( FilterTable1.EndDateKey < 0 )  )  ) 
+                        AND  (  (  RootTable0.DurableKey = FilterTable1.PatientDurableKey  )  )  )  )
+		-----
+		
                 AND  (  ( FilterTable1.Count = '1' )  )   )   )  subq0
  )  subq
 
